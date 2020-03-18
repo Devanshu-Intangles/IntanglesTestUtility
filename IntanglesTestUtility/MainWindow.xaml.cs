@@ -17,6 +17,7 @@ using System.Diagnostics;
 using System.ComponentModel;
 using System.IO.Ports;
 using System.IO;
+using SerialPortLib;
 
 namespace IntanglesTestUtility
 {
@@ -27,9 +28,11 @@ namespace IntanglesTestUtility
     {
         private static int numOutputLines = 0;
 
-        public string x ;
+        public string consoleMonitorData ;
+        public string serialMonitorData;
 
         private StringBuilder output;
+        SerialPortInput serialPort;
 
         public event PropertyChangedEventHandler PropertyChanged;
 
@@ -50,27 +53,55 @@ namespace IntanglesTestUtility
             }
         }
 
-        public string X
+        public string ConsoleMonitorData
         {
             get
             {
-                return x;
+                return consoleMonitorData;
             }
             set
             {
-                x = value;
-                RaisePropertyChange("X");
+                consoleMonitorData = value;
+                RaisePropertyChange("ConsoleMonitorData");
             }
         }
-
+        public string SerialMonitorData
+        {
+            get
+            {
+                return serialMonitorData;
+            }
+            set
+            {
+                serialMonitorData = value;
+                RaisePropertyChange("SerialMonitorData");
+            }
+        }
         public MainWindow()
         {
             InitializeComponent();
             this.DataContext = this;
-            
+            serialPort = new SerialPortInput();
+            // Listen to Serial Port events
+
+            serialPort.ConnectionStatusChanged += delegate (object sender, ConnectionStatusChangedEventArgs args)
+            {
+                Debug.WriteLine("Connected = {0}", args.Connected);
+            };
+
+            serialPort.MessageReceived += delegate (object sender, MessageReceivedEventArgs args)
+            {
+                SerialMonitorData= BitConverter.ToString(args.Data);
+            };
+
+            // Set port options
+            serialPort.SetPort("COM13", 115200);
+
+            // Connect the serial port
+            serialPort.Connect();
         }
 
-        private void Button_Click(object sender, RoutedEventArgs e)
+        private void Button_Click_Start(object sender, RoutedEventArgs e)
         {
             try
             {
@@ -100,14 +131,16 @@ namespace IntanglesTestUtility
 
         }
 
-        private void Button_Click_1(object sender, RoutedEventArgs e)
+        private void Button_Click_Clear(object sender, RoutedEventArgs e)
         {
             Output.Clear();
+            ConsoleMonitorData =string.Empty;
         }
 
-        private void Button_Click_Serial(object sender, RoutedEventArgs e)
+        private void Button_Click_Send(object sender, RoutedEventArgs e)
         {
-
+            var message = System.Text.Encoding.UTF8.GetBytes(Seial_TextBox.Text);
+            serialPort.SendMessage(message);
         }
 
         private void SortOutputHandler(object sendingProcess,
@@ -124,7 +157,7 @@ namespace IntanglesTestUtility
                 // Add the text to the collected output.
                 Output.Append(Environment.NewLine +
                     $"{outLine.Data}");
-               X = Output.ToString();
+               ConsoleMonitorData = Output.ToString();
                 
             }
             }
@@ -142,6 +175,10 @@ namespace IntanglesTestUtility
             }
         }
 
+        private void ComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+
+        }
     }
 }
 

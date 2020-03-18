@@ -18,26 +18,28 @@
             <RowDefinition Height="4*" />
         </Grid.RowDefinitions>
         <StackPanel Grid.Row="0">
-            <Button Content="Start&#x9;" Margin="10,10,10,10" HorizontalAlignment="Left" Height="29"  VerticalAlignment="Top" Width="108" Click="Button_Click"/>
-            <Button Content="Clear&#x9;" Margin="10,10,10,10" HorizontalAlignment="Left" Height="29"  VerticalAlignment="Top" Width="108" Click="Button_Click_1"/>
-            
+            <Button Content="Start&#x9;" Margin="10,10,10,10" HorizontalAlignment="Left" Height="29"  VerticalAlignment="Top" Width="108" Click="Button_Click_Start"/>
+            <Button Content="Clear&#x9;" Margin="10,10,10,10" HorizontalAlignment="Left" Height="29"  VerticalAlignment="Top" Width="108" Click="Button_Click_Clear"/>
+            <Grid>
+                
+            </Grid>
         </StackPanel>
         <StackPanel Background="CadetBlue" Grid.Row="1" Grid.ColumnSpan="3" Orientation="Horizontal">
-            <ComboBox   Margin="10,10,10,10" HorizontalAlignment="Left" Height="29"  VerticalAlignment="Top" Width="108">
+            <ComboBox Name="cmbComPort"  Margin="10,10,10,10" HorizontalAlignment="Left" Height="29"  VerticalAlignment="Top" Width="108" SelectionChanged="ComboBox_SelectionChanged">
                 <DataTemplate>
                     <StackPanel Orientation="Horizontal">
                         <TextBlock Text="{Binding Name}" />
                     </StackPanel>
                 </DataTemplate>
             </ComboBox>
-            <ComboBox  Margin="10,10,10,10" HorizontalAlignment="Left" Height="29"  VerticalAlignment="Top" Width="108">
+            <ComboBox Name="cmbParityBits"  Margin="10,10,10,10" HorizontalAlignment="Left" Height="29"  VerticalAlignment="Top" Width="108">
                 <DataTemplate>
                     <StackPanel Orientation="Horizontal">
                         <TextBlock Text="{Binding Name}" />
                     </StackPanel>
                 </DataTemplate>
             </ComboBox>
-            <ComboBox   Margin="10,10,10,10" HorizontalAlignment="Left" Height="29"  VerticalAlignment="Top" Width="108" >
+            <ComboBox Name="cmbBaudRate"   Margin="10,10,10,10" HorizontalAlignment="Left" Height="29"  VerticalAlignment="Top" Width="108" >
                 <DataTemplate>
                     <StackPanel Orientation="Horizontal">
                         <TextBlock Text="{Binding Name}" />
@@ -45,18 +47,6 @@
                 </DataTemplate>
             </ComboBox>
         </StackPanel>
-        <Border Grid.Row="3" Grid.ColumnSpan="3" BorderThickness="1" BorderBrush="Black">
-            <Grid >
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="1*" />
-                    <RowDefinition Height="8*" />
-                </Grid.RowDefinitions>
-                <TextBox FontSize="15" Background="FloralWhite" BorderThickness="1">Serial Monitor</TextBox>
-                <ScrollViewer Grid.Row="1" Background="FloralWhite" BorderBrush="Black" BorderThickness="5" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="10,10,10,10">
-                    <TextBlock x:Name="TextBlock" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" TextWrapping="Wrap" Text="{Binding X,Mode=OneWay}"  Margin="0,0,0,20" />
-                </ScrollViewer>
-            </Grid>
-        </Border>
         <Border Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="3" BorderThickness="1" BorderBrush="Black">
             <Grid >
                 <Grid.RowDefinitions>
@@ -64,12 +54,34 @@
                     <RowDefinition Height="8*" />
                 </Grid.RowDefinitions>
 
-                <TextBox FontSize="15" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Background="FloralWhite"  BorderThickness="1">Console Monitor</TextBox>
+                <TextBox IsReadOnly="True" FontSize="15" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Background="FloralWhite"  BorderThickness="1">Console Monitor</TextBox>
                 <ScrollViewer Grid.Row="1" Background="FloralWhite" BorderBrush="Black" BorderThickness="5" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Margin="10,10,10,10">
-                <TextBlock x:Name="TextBlockX" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" TextWrapping="Wrap" Text="{Binding X,Mode=OneWay}"  Margin="0,0,0,20" />
-            </ScrollViewer>
+                    <TextBlock x:Name="TextBlockX" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" TextWrapping="Wrap" Text="{Binding ConsoleMonitorData,Mode=OneWay}"  Margin="0,0,0,20" />
+                </ScrollViewer>
 
-                </Grid >
+            </Grid >
         </Border>
+        <Border Grid.Row="3" Grid.ColumnSpan="3" BorderThickness="1" BorderBrush="Black">
+            <Grid >
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="1*" />
+                    <RowDefinition Height="1*" />
+                    <RowDefinition Height="8*" />
+                </Grid.RowDefinitions>
+                <TextBox IsReadOnly="True" FontSize="15" Background="FloralWhite" HorizontalAlignment="Stretch" BorderThickness="1">Serial Monitor</TextBox>
+                <Grid Grid.Row="1">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="6*" />
+                        <ColumnDefinition Width="1*" />
+                    </Grid.ColumnDefinitions>
+                    <TextBox x:Name="Seial_TextBox" FontSize="15" MinWidth="700" HorizontalAlignment="Stretch" Background="FloralWhite" BorderThickness="1"/>
+                    <Button Grid.Column="1" Margin="10,0,0,0" Click="Button_Click_Send" >Send</Button>
+                </Grid>
+                <ScrollViewer Grid.Row="2" Background="FloralWhite" BorderBrush="Black" BorderThickness="5" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="10,10,10,10">
+                    <TextBlock x:Name="TextBlock" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" TextWrapping="Wrap" Text="{Binding SerialMonitorData,Mode=OneWay}"  Margin="0,0,0,20" />
+                </ScrollViewer>
+            </Grid>
+        </Border>
+       
     </Grid>
 </Window>

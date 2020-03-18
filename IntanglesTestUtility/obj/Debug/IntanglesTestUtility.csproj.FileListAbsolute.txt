@@ -13,3 +13,8 @@ c:\users\int01\source\repos\IntanglesTestUtility\IntanglesTestUtility\obj\Debug\
 c:\users\int01\source\repos\IntanglesTestUtility\IntanglesTestUtility\obj\Debug\IntanglesTestUtility.csproj.CoreCompileInputs.cache
 c:\users\int01\source\repos\IntanglesTestUtility\IntanglesTestUtility\obj\Debug\IntanglesTestUtility.exe
 c:\users\int01\source\repos\IntanglesTestUtility\IntanglesTestUtility\obj\Debug\IntanglesTestUtility.pdb
+C:\Users\Int01\source\repos\IntanglesTestUtility\IntanglesTestUtility\bin\Debug\NLog.dll
+C:\Users\Int01\source\repos\IntanglesTestUtility\IntanglesTestUtility\bin\Debug\SerialPortLib.dll
+C:\Users\Int01\source\repos\IntanglesTestUtility\IntanglesTestUtility\bin\Debug\NLog.xml
+C:\Users\Int01\source\repos\IntanglesTestUtility\IntanglesTestUtility\bin\Debug\SerialPortLib.xml
+C:\Users\Int01\source\repos\IntanglesTestUtility\IntanglesTestUtility\obj\Debug\IntanglesTestUtility.csproj.CopyComplete
