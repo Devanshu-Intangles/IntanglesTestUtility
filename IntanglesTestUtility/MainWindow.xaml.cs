@@ -31,28 +31,44 @@ namespace IntanglesTestUtility
         public string consoleMonitorData ;
         public string serialMonitorData;
 
-        private StringBuilder output;
+        private StringBuilder consoleOutput;
+        private StringBuilder serialOutput;
         SerialPortInput serialPort;
 
         public event PropertyChangedEventHandler PropertyChanged;
 
-        public StringBuilder Output
+        public StringBuilder ConsoleOutput
         {
             get
             {
-                if (output == null)
+                if (consoleOutput == null)
                 {
-                    output = new StringBuilder();
+                    consoleOutput = new StringBuilder();
                 }
-                return output;
+                return consoleOutput;
             }
             set
             {
-                output = value;
-                RaisePropertyChange("Output");
+                consoleOutput = value;
+                RaisePropertyChange("ConsoleOutput");
             }
         }
-
+        public StringBuilder SerialOutput
+        {
+            get
+            {
+                if (serialOutput == null)
+                {
+                    serialOutput = new StringBuilder();
+                }
+                return serialOutput;
+            }
+            set
+            {
+                serialOutput = value;
+                RaisePropertyChange("SerialOutput");
+            }
+        }
         public string ConsoleMonitorData
         {
             get
@@ -91,7 +107,17 @@ namespace IntanglesTestUtility
 
             serialPort.MessageReceived += delegate (object sender, MessageReceivedEventArgs args)
             {
-                SerialMonitorData= BitConverter.ToString(args.Data);
+                string tempData= string.Empty;
+                tempData = BitConverter.ToString(args.Data);
+                if (!String.IsNullOrEmpty(tempData))
+                {
+                    // Add the text to the collected output.
+                    SerialOutput.Append(Environment.NewLine +
+                    $"{tempData}");
+                    SerialMonitorData = SerialOutput.ToString();
+
+                }
+                
             };
 
             // Set port options
@@ -105,7 +131,7 @@ namespace IntanglesTestUtility
         {
             try
             {
-                Output.Clear();
+                ConsoleOutput.Clear();
                 using (Process myProcess = new Process())
                 {
                     myProcess.StartInfo.UseShellExecute = false;
@@ -133,8 +159,9 @@ namespace IntanglesTestUtility
 
         private void Button_Click_Clear(object sender, RoutedEventArgs e)
         {
-            Output.Clear();
+            ConsoleOutput.Clear();
             ConsoleMonitorData =string.Empty;
+            SerialMonitorData = string.Empty;
         }
 
         private void Button_Click_Send(object sender, RoutedEventArgs e)
@@ -153,11 +180,10 @@ namespace IntanglesTestUtility
             // Collect the sort command output.
             if (!String.IsNullOrEmpty(outLine.Data))
             {
-                numOutputLines++;
-                // Add the text to the collected output.
-                Output.Append(Environment.NewLine +
+                    // Add the text to the collected output.
+                    ConsoleOutput.Append(Environment.NewLine +
                     $"{outLine.Data}");
-               ConsoleMonitorData = Output.ToString();
+               ConsoleMonitorData = ConsoleOutput.ToString();
                 
             }
             }
