@@ -17,10 +17,19 @@
             <RowDefinition Height="1*" />
             <RowDefinition Height="4*" />
         </Grid.RowDefinitions>
-        <StackPanel Grid.Row="0">
-            <Button Content="Start&#x9;" Margin="10,10,10,10" HorizontalAlignment="Left" Height="29"  VerticalAlignment="Top" Width="108" Click="Button_Click_Start"/>
-            <Button Content="Clear&#x9;" Margin="10,10,10,10" HorizontalAlignment="Left" Height="29"  VerticalAlignment="Top" Width="108" Click="Button_Click_Clear"/>
-            <Grid>
+        <Grid Grid.Row="0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="1*" />
+                <RowDefinition Height="1*" />
+                <RowDefinition Height="4*" />
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="1*" />
+                <ColumnDefinition Width="1*" />
+            </Grid.ColumnDefinitions>
+            <Button Grid.Row="0" Content="Start&#x9;" Margin="10,10,10,10" HorizontalAlignment="Left" Height="29"  VerticalAlignment="Top" Width="108" Click="Button_Click_Start"/>
+            <Button Grid.Row="1" Content="Clear&#x9;" Margin="10,10,10,10" HorizontalAlignment="Left" Height="29"  VerticalAlignment="Top" Width="108" Click="Button_Click_Clear"/>
+            <Grid Grid.Row="2" Grid.ColumnSpan="2">
                 <DataGrid ItemsSource="{Binding ResultsCollection}"
                   AutoGenerateColumns="False"
                   CanUserAddRows="False">
@@ -30,37 +39,38 @@
                         <!--<DataGridCheckBoxColumn Header="Select" Binding="{Binding IsSelected}" />-->
 
                         <DataGridTextColumn Header="Parameter" Binding="{Binding Parameter}"/>
-                        
+
                         <DataGridTemplateColumn Header="Status">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
-                                    <CheckBox IsChecked="{Binding IsSelected, UpdateSourceTrigger=PropertyChanged}" />
+                                    <CheckBox IsEnabled="False" IsChecked="{Binding IsSelected, UpdateSourceTrigger=PropertyChanged}" />
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
 
-                        <DataGridTextColumn Header="Result" Binding="{Binding Result}"/>
+                        <DataGridTextColumn Width="*" Header="Result" Binding="{Binding Result}" />
 
                     </DataGrid.Columns>
                 </DataGrid>
             </Grid>
-        </StackPanel>
-        <StackPanel Background="CadetBlue" Grid.Row="1" Grid.ColumnSpan="3" Orientation="Horizontal">
-            <ComboBox Name="cmbComPort"  Margin="10,10,10,10" HorizontalAlignment="Left" Height="29"  VerticalAlignment="Top" Width="108" SelectionChanged="ComboBox_SelectionChanged">
+        </Grid>
+        <StackPanel Background="#f2f3f5" Grid.Row="1" Grid.ColumnSpan="3" Orientation="Horizontal">
+            <TextBox  IsReadOnly="True" FontSize="15" Background="#f2f3f5" HorizontalAlignment="Stretch" VerticalAlignment="Center" >Serial Monitor</TextBox>
+            <ComboBox Name="cmbComPort"  Margin="50,10,10,10" HorizontalAlignment="Left" Height="29"  VerticalAlignment="Center" Width="108" SelectionChanged="ComboBox_SelectionChanged">
                 <DataTemplate>
                     <StackPanel Orientation="Horizontal">
                         <TextBlock Text="{Binding Name}" />
                     </StackPanel>
                 </DataTemplate>
             </ComboBox>
-            <ComboBox Name="cmbParityBits"  Margin="10,10,10,10" HorizontalAlignment="Left" Height="29"  VerticalAlignment="Top" Width="108">
+            <ComboBox Name="cmbParityBits"  Margin="10,10,10,10" HorizontalAlignment="Left" Height="29"  VerticalAlignment="Center" Width="108">
                 <DataTemplate>
                     <StackPanel Orientation="Horizontal">
                         <TextBlock Text="{Binding Name}" />
                     </StackPanel>
                 </DataTemplate>
             </ComboBox>
-            <ComboBox Name="cmbBaudRate"   Margin="10,10,10,10" HorizontalAlignment="Left" Height="29"  VerticalAlignment="Top" Width="108" >
+            <ComboBox Name="cmbBaudRate"   Margin="10,10,10,10" HorizontalAlignment="Left" Height="29"  VerticalAlignment="Center" Width="108" >
                 <DataTemplate>
                     <StackPanel Orientation="Horizontal">
                         <TextBlock Text="{Binding Name}" />
@@ -74,10 +84,11 @@
                     <RowDefinition Height="1*" />
                     <RowDefinition Height="8*" />
                 </Grid.RowDefinitions>
-
-                <TextBox IsReadOnly="True" FontSize="15" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Background="FloralWhite"  BorderThickness="1">Console Monitor</TextBox>
+                <StackPanel Orientation="Horizontal"  Background="#f2f3f5" >
+                    <TextBox IsReadOnly="True" FontSize="15" VerticalAlignment="Stretch" HorizontalAlignment="Stretch"  Background="#f2f3f5" BorderThickness="1">Console Monitor</TextBox>
+                </StackPanel>
                 <ScrollViewer Grid.Row="1" Background="FloralWhite" BorderBrush="Black" BorderThickness="5" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Margin="10,10,10,10">
-                    <TextBlock x:Name="TextBlockX" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" TextWrapping="Wrap" Text="{Binding ConsoleMonitorData,Mode=OneWay}"  Margin="0,0,0,20" />
+                    <TextBlock  x:Name="TextBlockX" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" TextWrapping="Wrap" Text="{Binding ConsoleMonitorData,Mode=OneWay}"  Margin="0,0,0,20" />
                 </ScrollViewer>
 
             </Grid >
@@ -86,11 +97,10 @@
             <Grid >
                 <Grid.RowDefinitions>
                     <RowDefinition Height="1*" />
-                    <RowDefinition Height="1*" />
                     <RowDefinition Height="8*" />
                 </Grid.RowDefinitions>
-                <TextBox IsReadOnly="True" FontSize="15" Background="FloralWhite" HorizontalAlignment="Stretch" BorderThickness="1">Serial Monitor</TextBox>
-                <Grid Grid.Row="1">
+                
+                <Grid Grid.Row="0">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="6*" />
                         <ColumnDefinition Width="1*" />
@@ -98,7 +108,7 @@
                     <TextBox x:Name="Seial_TextBox" FontSize="15" MinWidth="700" HorizontalAlignment="Stretch" Background="FloralWhite" BorderThickness="1"/>
                     <Button Grid.Column="1" Margin="10,0,0,0" Click="Button_Click_Send" >Send</Button>
                 </Grid>
-                <ScrollViewer Grid.Row="2" Background="FloralWhite" BorderBrush="Black" BorderThickness="5" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="10,10,10,10">
+                <ScrollViewer Grid.Row="1" Background="FloralWhite" BorderBrush="Black" BorderThickness="5" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="10,10,10,10">
                     <TextBlock x:Name="TextBlock" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" TextWrapping="Wrap" Text="{Binding SerialMonitorData,Mode=OneWay}"  Margin="0,0,0,20" />
                 </ScrollViewer>
             </Grid>

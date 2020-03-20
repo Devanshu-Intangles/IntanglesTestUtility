@@ -1,25 +1,14 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
-using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 using System.Diagnostics;
 using System.ComponentModel;
-using System.IO.Ports;
-using System.IO;
 using SerialPortLib;
 using System.Collections.ObjectModel;
 using IntanglesTestUtility.Model;
+using System.Text.RegularExpressions;
 
 namespace IntanglesTestUtility
 {
@@ -114,9 +103,11 @@ namespace IntanglesTestUtility
             InitializeComponent();
             this.DataContext = this;
             serialPort = new SerialPortInput();
+            string exprSTM= @"(S_TEST=)\w+";
+            string exprWP = @"(W_TEST=)\w+";
             // Listen to Serial Port events
-            ResultsCollection.Add(new TestResultsModel { IsSelected=false,Parameter="STM-IMU",Result= string.Empty });
-            ResultsCollection.Add(new TestResultsModel { IsSelected = false, Parameter = "STM-RTC", Result = string.Empty });
+            ResultsCollection.Add(new TestResultsModel { IsSelected=true,Parameter="STM-IMU",Result= string.Empty });
+            ResultsCollection.Add(new TestResultsModel { IsSelected = true, Parameter = "STM-RTC", Result = string.Empty });
             ResultsCollection.Add(new TestResultsModel { IsSelected = false, Parameter = "STM-Internal Battery", Result = string.Empty });
             ResultsCollection.Add(new TestResultsModel { IsSelected = false, Parameter = "STM-External Battery", Result = string.Empty });
             ResultsCollection.Add(new TestResultsModel { IsSelected = false, Parameter = "STM-CAN1", Result = string.Empty });
@@ -126,6 +117,7 @@ namespace IntanglesTestUtility
             ResultsCollection.Add(new TestResultsModel { IsSelected = false, Parameter = "WP-SIM", Result = string.Empty });
             ResultsCollection.Add(new TestResultsModel { IsSelected = false, Parameter = "WP-GPS", Result = string.Empty });
             ResultsCollection.Add(new TestResultsModel { IsSelected = false, Parameter = "WP-Digital Inputs", Result = string.Empty });
+
             serialPort.ConnectionStatusChanged += delegate (object sender, ConnectionStatusChangedEventArgs args)
             {
                 Debug.WriteLine("Connected = {0}", args.Connected);
@@ -134,16 +126,20 @@ namespace IntanglesTestUtility
             serialPort.MessageReceived += delegate (object sender, MessageReceivedEventArgs args)
             {
                 string tempData= string.Empty;
-                tempData = BitConverter.ToString(args.Data);
+                tempData = Encoding.Default.GetString(args.Data);
                 if (!String.IsNullOrEmpty(tempData))
                 {
                     // Add the text to the collected output.
                     SerialOutput.Append(Environment.NewLine +
                     $"{tempData}");
                     SerialMonitorData = SerialOutput.ToString();
+                    MatchCollection mcSTM = Regex.Matches(SerialMonitorData, exprSTM);
+                    MatchCollection mcWP = Regex.Matches(SerialMonitorData, exprWP);
 
+                    string subString = mcSTM[mcSTM.Count-1].Value;
+                    var res= subString.Split('=')[1].Split(',');
+                    
                 }
-                
             };
 
             // Set port options
@@ -186,6 +182,7 @@ namespace IntanglesTestUtility
         private void Button_Click_Clear(object sender, RoutedEventArgs e)
         {
             ConsoleOutput.Clear();
+            SerialOutput.Clear();
             ConsoleMonitorData =string.Empty;
             SerialMonitorData = string.Empty;
         }
