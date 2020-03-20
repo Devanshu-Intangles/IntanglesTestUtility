@@ -18,6 +18,8 @@ using System.ComponentModel;
 using System.IO.Ports;
 using System.IO;
 using SerialPortLib;
+using System.Collections.ObjectModel;
+using IntanglesTestUtility.Model;
 
 namespace IntanglesTestUtility
 {
@@ -34,6 +36,20 @@ namespace IntanglesTestUtility
         private StringBuilder consoleOutput;
         private StringBuilder serialOutput;
         SerialPortInput serialPort;
+
+        private ObservableCollection<TestResultsModel> _resultsCollection;
+        public ObservableCollection<TestResultsModel> ResultsCollection
+        {
+            get
+            {
+                return _resultsCollection ?? (_resultsCollection = new ObservableCollection<TestResultsModel>());
+            }
+            set
+            {
+                _resultsCollection = value;
+                RaisePropertyChange("ResultsCollection");
+            }
+        }
 
         public event PropertyChangedEventHandler PropertyChanged;
 
@@ -99,7 +115,17 @@ namespace IntanglesTestUtility
             this.DataContext = this;
             serialPort = new SerialPortInput();
             // Listen to Serial Port events
-
+            ResultsCollection.Add(new TestResultsModel { IsSelected=false,Parameter="STM-IMU",Result= string.Empty });
+            ResultsCollection.Add(new TestResultsModel { IsSelected = false, Parameter = "STM-RTC", Result = string.Empty });
+            ResultsCollection.Add(new TestResultsModel { IsSelected = false, Parameter = "STM-Internal Battery", Result = string.Empty });
+            ResultsCollection.Add(new TestResultsModel { IsSelected = false, Parameter = "STM-External Battery", Result = string.Empty });
+            ResultsCollection.Add(new TestResultsModel { IsSelected = false, Parameter = "STM-CAN1", Result = string.Empty });
+            ResultsCollection.Add(new TestResultsModel { IsSelected = false, Parameter = "STM-CAN2", Result = string.Empty });
+            ResultsCollection.Add(new TestResultsModel { IsSelected = false, Parameter = "STM-Ignition", Result = string.Empty });
+            ResultsCollection.Add(new TestResultsModel { IsSelected = false, Parameter = "WP-IMEI", Result = string.Empty });
+            ResultsCollection.Add(new TestResultsModel { IsSelected = false, Parameter = "WP-SIM", Result = string.Empty });
+            ResultsCollection.Add(new TestResultsModel { IsSelected = false, Parameter = "WP-GPS", Result = string.Empty });
+            ResultsCollection.Add(new TestResultsModel { IsSelected = false, Parameter = "WP-Digital Inputs", Result = string.Empty });
             serialPort.ConnectionStatusChanged += delegate (object sender, ConnectionStatusChangedEventArgs args)
             {
                 Debug.WriteLine("Connected = {0}", args.Connected);

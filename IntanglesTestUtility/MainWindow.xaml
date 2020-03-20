@@ -13,7 +13,7 @@
             <ColumnDefinition Width="1*" />
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
-            <RowDefinition Height="4*" />
+            <RowDefinition Height="6*" />
             <RowDefinition Height="1*" />
             <RowDefinition Height="4*" />
         </Grid.RowDefinitions>
@@ -21,7 +21,28 @@
             <Button Content="Start&#x9;" Margin="10,10,10,10" HorizontalAlignment="Left" Height="29"  VerticalAlignment="Top" Width="108" Click="Button_Click_Start"/>
             <Button Content="Clear&#x9;" Margin="10,10,10,10" HorizontalAlignment="Left" Height="29"  VerticalAlignment="Top" Width="108" Click="Button_Click_Clear"/>
             <Grid>
-                
+                <DataGrid ItemsSource="{Binding ResultsCollection}"
+                  AutoGenerateColumns="False"
+                  CanUserAddRows="False">
+
+                    <DataGrid.Columns>
+
+                        <!--<DataGridCheckBoxColumn Header="Select" Binding="{Binding IsSelected}" />-->
+
+                        <DataGridTextColumn Header="Parameter" Binding="{Binding Parameter}"/>
+                        
+                        <DataGridTemplateColumn Header="Status">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <CheckBox IsChecked="{Binding IsSelected, UpdateSourceTrigger=PropertyChanged}" />
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+
+                        <DataGridTextColumn Header="Result" Binding="{Binding Result}"/>
+
+                    </DataGrid.Columns>
+                </DataGrid>
             </Grid>
         </StackPanel>
         <StackPanel Background="CadetBlue" Grid.Row="1" Grid.ColumnSpan="3" Orientation="Horizontal">
