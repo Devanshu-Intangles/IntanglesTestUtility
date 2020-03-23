@@ -5,7 +5,8 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:IntanglesTestUtility"
         mc:Ignorable="d"
-        Title="Intangles Test Utility" Height="Auto" Width="Auto"  BorderThickness="1">
+        Title="Intangles Test Utility" Height="Auto" Width="Auto"  BorderThickness="1"
+        WindowStartupLocation="CenterScreen" WindowState="Maximized">
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="1*" />

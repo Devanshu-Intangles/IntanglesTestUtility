@@ -17,7 +17,6 @@ namespace IntanglesTestUtility
     /// </summary>
     public partial class MainWindow : Window, INotifyPropertyChanged
     {
-        private static int numOutputLines = 0;
 
         public string consoleMonitorData ;
         public string serialMonitorData;
@@ -98,16 +97,32 @@ namespace IntanglesTestUtility
                 RaisePropertyChange("SerialMonitorData");
             }
         }
+
+        enum Params
+        {
+            STM_IMU,
+            STM_RTC,
+            STM_Internal_Battery,
+            STM_External_Battery,
+            STM_CAN1,
+            STM_CAN2,
+            STM_Ignition,
+            WP_IMEI,
+            WP_SIM,
+            WP_GPS,
+            WP_Digital_Inputs
+        }
+
         public MainWindow()
         {
+            
             InitializeComponent();
             this.DataContext = this;
             serialPort = new SerialPortInput();
-            string exprSTM= @"(S_TEST=)\w+";
-            string exprWP = @"(W_TEST=)\w+";
+            string exprSTM= @"(S_TEST=).[^ ]+";
             // Listen to Serial Port events
-            ResultsCollection.Add(new TestResultsModel { IsSelected=true,Parameter="STM-IMU",Result= string.Empty });
-            ResultsCollection.Add(new TestResultsModel { IsSelected = true, Parameter = "STM-RTC", Result = string.Empty });
+            ResultsCollection.Add(new TestResultsModel { IsSelected=false,Parameter="STM-IMU",Result= string.Empty });
+            ResultsCollection.Add(new TestResultsModel { IsSelected = false, Parameter = "STM-RTC", Result = string.Empty });
             ResultsCollection.Add(new TestResultsModel { IsSelected = false, Parameter = "STM-Internal Battery", Result = string.Empty });
             ResultsCollection.Add(new TestResultsModel { IsSelected = false, Parameter = "STM-External Battery", Result = string.Empty });
             ResultsCollection.Add(new TestResultsModel { IsSelected = false, Parameter = "STM-CAN1", Result = string.Empty });
@@ -130,15 +145,179 @@ namespace IntanglesTestUtility
                 if (!String.IsNullOrEmpty(tempData))
                 {
                     // Add the text to the collected output.
-                    SerialOutput.Append(Environment.NewLine +
-                    $"{tempData}");
+                    SerialOutput.Append($"{tempData}");
                     SerialMonitorData = SerialOutput.ToString();
                     MatchCollection mcSTM = Regex.Matches(SerialMonitorData, exprSTM);
-                    MatchCollection mcWP = Regex.Matches(SerialMonitorData, exprWP);
+                    //Select the last string which matched the patern
+                    string subString =  mcSTM[mcSTM.Count - 1]?.Value;
+                    var stmRes = subString?.Split(';')[0]?.Split('=')[1]?.Split(',');
+                    string[] wcpRes= new string[4];
+                    if (subString.Split(';')[1]?.Split('=').Length > 1) 
+                    {
+                        wcpRes = subString?.Split(';')[1]?.Split('=')[1]?.Split(',');
+                    }
+                    var finalRes = stmRes?.Concat(wcpRes)?.ToList() ;
+                    finalRes[finalRes.Count() - 1]?.TrimEnd(';');
+                    for (int i = 0; i < finalRes.Count; i++)
+                    {
+                        int index = -1;
+                        switch ((Params)i)
+                        {
 
-                    string subString = mcSTM[mcSTM.Count-1].Value;
-                    var res= subString.Split('=')[1].Split(',');
-                    
+                            case Params.STM_IMU:
+                                index = (int)Params.STM_IMU;
+                                if (finalRes?[index] == "1")
+                                {
+                                    ResultsCollection[index].IsSelected = true;
+                                    ResultsCollection[index].Result = "Working";
+                                }
+                                else
+                                {
+                                    ResultsCollection[index].IsSelected = false;
+                                    ResultsCollection[index].Result = "Failed";
+                                }
+                                break;
+                            case Params.STM_RTC:
+                                index = (int)Params.STM_RTC;
+                                if (finalRes[index] == "1")
+                                {
+                                    ResultsCollection[index].IsSelected = true;
+                                    ResultsCollection[index].Result = "Working";
+                                }
+                                else
+                                {
+                                    ResultsCollection[index].IsSelected = false;
+                                    ResultsCollection[index].Result = "Failed";
+                                }
+                                break;
+
+                            case Params.STM_Internal_Battery:
+                                index = (int)Params.STM_Internal_Battery;
+                                if (finalRes[index] == "IB1")
+                                {
+                                    ResultsCollection[index].IsSelected = true;
+                                    ResultsCollection[index].Result = "Voltage above threshold";
+                                }
+                                else
+                                {
+                                    ResultsCollection[index].IsSelected = false;
+                                    ResultsCollection[index].Result = "Failed";
+                                }
+                                break;
+
+                            case Params.STM_External_Battery:
+                                index = (int)Params.STM_External_Battery;
+                                if (finalRes[index] == "EB1")
+                                {
+                                    ResultsCollection[index].IsSelected = true;
+                                    ResultsCollection[index].Result = "Voltage above threshold";
+                                }
+                                else
+                                {
+                                    ResultsCollection[index].IsSelected = false;
+                                    ResultsCollection[index].Result = "Failed";
+                                }
+                                break;
+
+                            case Params.STM_CAN1:
+                                index = (int)Params.STM_CAN1;
+                                if (finalRes[index] == "CAN1OK")
+                                {
+                                    ResultsCollection[index].IsSelected = true;
+                                    ResultsCollection[index].Result = "Working";
+                                }
+                                else
+                                {
+                                    ResultsCollection[index].IsSelected = false;
+                                    ResultsCollection[index].Result = "Failed";
+                                }
+                                break;
+
+                            case Params.STM_CAN2:
+                                index = (int)Params.STM_CAN2;
+                                if (finalRes[index] == "CAN2OK")
+                                {
+                                    ResultsCollection[index].IsSelected = true;
+                                    ResultsCollection[index].Result = "Working";
+                                }
+                                else
+                                {
+                                    ResultsCollection[index].IsSelected = false;
+                                    ResultsCollection[index].Result = "Failed";
+                                }
+                                break;
+                            case Params.STM_Ignition:
+                                index = (int)Params.STM_Ignition;
+                                if (finalRes[index] == "IG1")
+                                {
+                                    ResultsCollection[index].IsSelected = true;
+                                    ResultsCollection[index].Result = "Working";
+                                }
+                                else
+                                {
+                                    ResultsCollection[index].IsSelected = false;
+                                    ResultsCollection[index].Result = "Failed";
+                                }
+                                break;
+                            case Params.WP_IMEI:
+                                index = (int)Params.WP_IMEI;
+                                if (finalRes[index] == "-2" || finalRes[index]==null)
+                                {
+                                    ResultsCollection[index].IsSelected = false;
+                                    ResultsCollection[index].Result = "Failed";
+                                }
+                                else
+                                {
+                                    ResultsCollection[index].IsSelected = true;
+                                    ResultsCollection[index].Result = finalRes[index];
+                                }
+                                break;
+                            case Params.WP_SIM:
+                                index = (int)Params.WP_SIM;
+                                if (finalRes[index] == "-2" || finalRes[index] == null)
+                                {
+                                    ResultsCollection[index].IsSelected = false;
+                                    ResultsCollection[index].Result = "Failed";
+                                }
+                                else
+                                {
+                                    ResultsCollection[index].IsSelected = true;
+                                    ResultsCollection[index].Result = finalRes[index];
+                                }
+                                break;
+                            case Params.WP_GPS:
+                                index = (int)Params.WP_GPS;
+                                if (finalRes[index] == "-2" || finalRes[index] == null)
+                                {
+                                    ResultsCollection[index].IsSelected = false;
+                                    ResultsCollection[index].Result = "Failed";
+                                }
+                                else
+                                {
+                                    ResultsCollection[index].IsSelected = true;
+                                    ResultsCollection[index].Result = "Working";
+                                }
+                                break;
+                            case Params.WP_Digital_Inputs:
+                                index = (int)Params.WP_Digital_Inputs;
+                                if (finalRes[index] == "-2" || finalRes[index] == null)
+                                {
+                                    ResultsCollection[index].IsSelected = false;
+                                    ResultsCollection[index].Result = "Failed";
+                                }
+                                else
+                                {
+                                    ResultsCollection[index].IsSelected = true;
+                                    ResultsCollection[index].Result = "Working";
+                                }
+                                break;
+                            default:
+                                Debug.WriteLine("Invalid Param no. in Final res.");
+                                break;
+
+
+                        }
+                    }
                 }
             };
 
