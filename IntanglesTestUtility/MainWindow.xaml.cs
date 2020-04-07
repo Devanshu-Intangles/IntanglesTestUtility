@@ -9,6 +9,13 @@ using SerialPortLib;
 using System.Collections.ObjectModel;
 using IntanglesTestUtility.Model;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
+using System.Configuration;
+using System.IO;
+using System.Windows.Documents;
+using System.Windows.Media;
+using System.Collections.Generic;
+using System.Windows.Data;
 
 namespace IntanglesTestUtility
 {
@@ -17,15 +24,20 @@ namespace IntanglesTestUtility
     /// </summary>
     public partial class MainWindow : Window, INotifyPropertyChanged
     {
-
+        private TaskCompletionSource<bool> eventHandled;
+        private Process FlashTestProcess;
+        string IMEINo;
+        string SimNo;
+        private int ProcessId;
+        public static string processName;
         public string consoleMonitorData ;
         public string serialMonitorData;
 
         private StringBuilder consoleOutput;
         private StringBuilder serialOutput;
-        SerialPortInput serialPort;
 
         private ObservableCollection<TestResultsModel> _resultsCollection;
+        private string testResult;
         public ObservableCollection<TestResultsModel> ResultsCollection
         {
             get
@@ -57,6 +69,19 @@ namespace IntanglesTestUtility
                 RaisePropertyChange("ConsoleOutput");
             }
         }
+        public string TestResult
+        {
+            get
+            {
+                return testResult;
+            }
+            set
+            {
+                testResult = value;
+                RaisePropertyChange("TestResult");
+            }
+        }
+
         public StringBuilder SerialOutput
         {
             get
@@ -115,11 +140,8 @@ namespace IntanglesTestUtility
 
         public MainWindow()
         {
-            
             InitializeComponent();
             this.DataContext = this;
-            serialPort = new SerialPortInput();
-            string exprSTM= @"(S_TEST=).[^ ]+";
             // Listen to Serial Port events
             ResultsCollection.Add(new TestResultsModel { IsSelected=false,Parameter="STM-IMU",Result= string.Empty });
             ResultsCollection.Add(new TestResultsModel { IsSelected = false, Parameter = "STM-RTC", Result = string.Empty });
@@ -133,267 +155,189 @@ namespace IntanglesTestUtility
             ResultsCollection.Add(new TestResultsModel { IsSelected = false, Parameter = "WP-GPS", Result = string.Empty });
             ResultsCollection.Add(new TestResultsModel { IsSelected = false, Parameter = "WP-Digital Inputs", Result = string.Empty });
 
-            serialPort.ConnectionStatusChanged += delegate (object sender, ConnectionStatusChangedEventArgs args)
-            {
-                Debug.WriteLine("Connected = {0}", args.Connected);
-            };
-
-            serialPort.MessageReceived += delegate (object sender, MessageReceivedEventArgs args)
-            {
-                string tempData= string.Empty;
-                tempData = Encoding.Default.GetString(args.Data);
-                if (!String.IsNullOrEmpty(tempData))
-                {
-                    // Add the text to the collected output.
-                    SerialOutput.Append($"{tempData}");
-                    SerialMonitorData = SerialOutput.ToString();
-                    MatchCollection mcSTM = Regex.Matches(SerialMonitorData, exprSTM);
-                    //Select the last string which matched the patern
-                    string subString =  mcSTM[mcSTM.Count - 1]?.Value;
-                    var stmRes = subString?.Split(';')[0]?.Split('=')[1]?.Split(',');
-                    string[] wcpRes= new string[4];
-                    if (subString.Split(';')[1]?.Split('=').Length > 1) 
-                    {
-                        wcpRes = subString?.Split(';')[1]?.Split('=')[1]?.Split(',');
-                    }
-                    var finalRes = stmRes?.Concat(wcpRes)?.ToList() ;
-                    finalRes[finalRes.Count() - 1]?.TrimEnd(';');
-                    for (int i = 0; i < finalRes.Count; i++)
-                    {
-                        int index = -1;
-                        switch ((Params)i)
-                        {
-
-                            case Params.STM_IMU:
-                                index = (int)Params.STM_IMU;
-                                if (finalRes?[index] == "1")
-                                {
-                                    ResultsCollection[index].IsSelected = true;
-                                    ResultsCollection[index].Result = "Working";
-                                }
-                                else
-                                {
-                                    ResultsCollection[index].IsSelected = false;
-                                    ResultsCollection[index].Result = "Failed";
-                                }
-                                break;
-                            case Params.STM_RTC:
-                                index = (int)Params.STM_RTC;
-                                if (finalRes[index] == "1")
-                                {
-                                    ResultsCollection[index].IsSelected = true;
-                                    ResultsCollection[index].Result = "Working";
-                                }
-                                else
-                                {
-                                    ResultsCollection[index].IsSelected = false;
-                                    ResultsCollection[index].Result = "Failed";
-                                }
-                                break;
-
-                            case Params.STM_Internal_Battery:
-                                index = (int)Params.STM_Internal_Battery;
-                                if (finalRes[index] == "IB1")
-                                {
-                                    ResultsCollection[index].IsSelected = true;
-                                    ResultsCollection[index].Result = "Voltage above threshold";
-                                }
-                                else
-                                {
-                                    ResultsCollection[index].IsSelected = false;
-                                    ResultsCollection[index].Result = "Failed";
-                                }
-                                break;
-
-                            case Params.STM_External_Battery:
-                                index = (int)Params.STM_External_Battery;
-                                if (finalRes[index] == "EB1")
-                                {
-                                    ResultsCollection[index].IsSelected = true;
-                                    ResultsCollection[index].Result = "Voltage above threshold";
-                                }
-                                else
-                                {
-                                    ResultsCollection[index].IsSelected = false;
-                                    ResultsCollection[index].Result = "Failed";
-                                }
-                                break;
-
-                            case Params.STM_CAN1:
-                                index = (int)Params.STM_CAN1;
-                                if (finalRes[index] == "CAN1OK")
-                                {
-                                    ResultsCollection[index].IsSelected = true;
-                                    ResultsCollection[index].Result = "Working";
-                                }
-                                else
-                                {
-                                    ResultsCollection[index].IsSelected = false;
-                                    ResultsCollection[index].Result = "Failed";
-                                }
-                                break;
-
-                            case Params.STM_CAN2:
-                                index = (int)Params.STM_CAN2;
-                                if (finalRes[index] == "CAN2OK")
-                                {
-                                    ResultsCollection[index].IsSelected = true;
-                                    ResultsCollection[index].Result = "Working";
-                                }
-                                else
-                                {
-                                    ResultsCollection[index].IsSelected = false;
-                                    ResultsCollection[index].Result = "Failed";
-                                }
-                                break;
-                            case Params.STM_Ignition:
-                                index = (int)Params.STM_Ignition;
-                                if (finalRes[index] == "IG1")
-                                {
-                                    ResultsCollection[index].IsSelected = true;
-                                    ResultsCollection[index].Result = "Working";
-                                }
-                                else
-                                {
-                                    ResultsCollection[index].IsSelected = false;
-                                    ResultsCollection[index].Result = "Failed";
-                                }
-                                break;
-                            case Params.WP_IMEI:
-                                index = (int)Params.WP_IMEI;
-                                if (finalRes[index] == "-2" || finalRes[index]==null)
-                                {
-                                    ResultsCollection[index].IsSelected = false;
-                                    ResultsCollection[index].Result = "Failed";
-                                }
-                                else
-                                {
-                                    ResultsCollection[index].IsSelected = true;
-                                    ResultsCollection[index].Result = finalRes[index];
-                                }
-                                break;
-                            case Params.WP_SIM:
-                                index = (int)Params.WP_SIM;
-                                if (finalRes[index] == "-2" || finalRes[index] == null)
-                                {
-                                    ResultsCollection[index].IsSelected = false;
-                                    ResultsCollection[index].Result = "Failed";
-                                }
-                                else
-                                {
-                                    ResultsCollection[index].IsSelected = true;
-                                    ResultsCollection[index].Result = finalRes[index];
-                                }
-                                break;
-                            case Params.WP_GPS:
-                                index = (int)Params.WP_GPS;
-                                if (finalRes[index] == "-2" || finalRes[index] == null)
-                                {
-                                    ResultsCollection[index].IsSelected = false;
-                                    ResultsCollection[index].Result = "Failed";
-                                }
-                                else
-                                {
-                                    ResultsCollection[index].IsSelected = true;
-                                    ResultsCollection[index].Result = "Working";
-                                }
-                                break;
-                            case Params.WP_Digital_Inputs:
-                                index = (int)Params.WP_Digital_Inputs;
-                                if (finalRes[index] == "-2" || finalRes[index] == null)
-                                {
-                                    ResultsCollection[index].IsSelected = false;
-                                    ResultsCollection[index].Result = "Failed";
-                                }
-                                else
-                                {
-                                    ResultsCollection[index].IsSelected = true;
-                                    ResultsCollection[index].Result = "Working";
-                                }
-                                break;
-                            default:
-                                Debug.WriteLine("Invalid Param no. in Final res.");
-                                break;
-
-
-                        }
-                    }
-                }
-            };
-
-            // Set port options
-            serialPort.SetPort("COM13", 115200);
-
-            // Connect the serial port
-            serialPort.Connect();
         }
 
-        private void Button_Click_Start(object sender, RoutedEventArgs e)
+        private async void Button_Click_StartAsync(object sender, RoutedEventArgs e)
         {
+            ClearAllData();
+            var appSettings = ConfigurationManager.AppSettings;
+            if (File.Exists(appSettings["TempFileName"]))
+            {
+                 // File.Delete(appSettings["TempFileName"]);
+            }
+            eventHandled = new TaskCompletionSource<bool>();
             try
             {
                 ConsoleOutput.Clear();
-                using (Process myProcess = new Process())
+                using (FlashTestProcess = new Process())
                 {
-                    myProcess.StartInfo.UseShellExecute = false;
-                    // You can start any process, HelloWorld is a do-nothing example.
-                    myProcess.StartInfo.FileName = "C:\\Users\\Int01\\Source\\Repos\\ConsoleApp1\\ConsoleApp1\\bin\\Release\\ConsoleApp1.exe";
-                    myProcess.StartInfo.CreateNoWindow = true;
-                    myProcess.StartInfo.Arguments = "Devanshu";
-                    myProcess.OutputDataReceived += SortOutputHandler;
-                    myProcess.StartInfo.RedirectStandardOutput = true;
-                    myProcess.Start();
-                    myProcess.BeginOutputReadLine();
-                    // This code assumes the process you are starting will terminate itself. 
-                    // Given that is is started without a window so you cannot terminate it 
-                    // on the desktop, it must terminate itself or you can do it programmatically
-                    // from this application using the Kill method.
-                    
+                    FlashTestProcess.StartInfo.UseShellExecute = false;
+                    FlashTestProcess.EnableRaisingEvents = true;
+                    FlashTestProcess.StartInfo.FileName = appSettings["Exe"];
+                    FlashTestProcess.StartInfo.CreateNoWindow = true;
+                    FlashTestProcess.StartInfo.Arguments = appSettings["ScriptPath"];
+                    FlashTestProcess.OutputDataReceived += ConsoleOutputHandler;
+                    FlashTestProcess.Exited += new EventHandler(FlashTestProcess_Exited);
+                    FlashTestProcess.StartInfo.RedirectStandardOutput = true;
+                    FlashTestProcess.Start();
+                    FlashTestProcess.BeginOutputReadLine();
+                    ProcessId=FlashTestProcess.Id;
+                    await Task.WhenAny(eventHandled.Task, Task.Delay(300000));
                 }
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex.Message);
+                Debug.WriteLine(ex.Message);
             }
 
         }
 
         private void Button_Click_Clear(object sender, RoutedEventArgs e)
         {
-            ConsoleOutput.Clear();
-            SerialOutput.Clear();
-            ConsoleMonitorData =string.Empty;
-            SerialMonitorData = string.Empty;
+            ClearAllData();
         }
 
-        private void Button_Click_Send(object sender, RoutedEventArgs e)
-        {
-            var message = System.Text.Encoding.UTF8.GetBytes(Seial_TextBox.Text);
-            serialPort.SendMessage(message);
-        }
-
-        private void SortOutputHandler(object sendingProcess,
-            DataReceivedEventArgs outLine)
+        void ClearAllData()
         {
             try
             {
-
-            
-            // Collect the sort command output.
-            if (!String.IsNullOrEmpty(outLine.Data))
-            {
-                    // Add the text to the collected output.
-                    ConsoleOutput.Append(Environment.NewLine +
-                    $"{outLine.Data}");
-               ConsoleMonitorData = ConsoleOutput.ToString();
-                
-            }
+                ConsoleOutput.Clear();
+                SerialOutput.Clear();
+                ConsoleMonitorData = string.Empty;
+                SerialMonitorData = string.Empty;
+                foreach (var model in ResultsCollection)
+                {
+                    model.IsSelected = false;
+                    model.Result = string.Empty;
+                }
+                IMEINo = null;
+                SimNo = null;
+                TestResult = string.Empty;
             }
             catch(Exception ex)
             {
                 Debug.WriteLine(ex.ToString());
             }
         }
+
+        private void Button_Click_Send(object sender, RoutedEventArgs e)
+        {
+            // var message = System.Text.Encoding.UTF8.GetBytes(Seial_TextBox.Text);
+            // serialPort.SendMessage(message);
+        }
+
+        private void ConsoleOutputHandler(object sendingProcess,
+            DataReceivedEventArgs outLine)
+        {
+            try
+            {
+                var appSettings = ConfigurationManager.AppSettings;
+                if (!String.IsNullOrEmpty(outLine.Data))
+                {
+                    this.Dispatcher.Invoke(() =>
+                    {
+                        if (outLine.Data.Contains(appSettings["ErrorText"]))
+                        {
+                            TextBlock_ConsoleMonitor.Inlines.Add(new Run(Environment.NewLine +
+                                $"{outLine.Data}")
+                            { Foreground = Brushes.Red });
+                            
+                        }
+                        else
+                        {
+                            TextBlock_ConsoleMonitor.Inlines.Add(Environment.NewLine +
+                                $"{outLine.Data}");
+                        }
+                    });
+                    // Add the text to the collected output.
+                    ConsoleOutput.Append(Environment.NewLine +
+                    $"{outLine.Data}");
+                    // ConsoleMonitorData = ConsoleOutput.ToString();
+                }
+            }
+            catch(Exception ex)
+            {
+                Debug.WriteLine(ex.ToString());
+            }
+        }
+
+        private void FlashTestProcess_Exited(object sender, System.EventArgs e)
+        {
+            try
+            {
+                Process[] process= Process.GetProcesses();
+                process.Where(x => x.Id == ProcessId).FirstOrDefault()?.Kill();
+                var appSettings = ConfigurationManager.AppSettings;
+                List<char> res = new List<char>();
+                if (File.Exists(appSettings["TempFileName"]))
+                {
+                    var data = File.ReadAllLines(appSettings["TempFileName"]);
+                    IMEINo = data[0];
+                    SimNo = data[1];
+                    res = data[2].ToArray().ToList();
+                    //res = data[2].Split(',').ToList();
+                }
+                for (int i = 0; i < 11; i++)
+                {
+                    if (res != null && res.Count > 0 && res?[i] == '1')
+                    {
+                        ResultsCollection[i].IsSelected = true;
+                        ResultsCollection[i].Result = "Pass.";
+                        if (i == (int)Params.WP_IMEI)
+                        {
+                            if (IMEINo != null && IMEINo.Length == 14)
+                            {
+                                ResultsCollection[i].Result = "Pass. IMEI=" + IMEINo;
+                            }
+                            else
+                            {
+                                ResultsCollection[i].Result = "Fail.";
+                                ResultsCollection[i].IsSelected = false;
+                            }
+
+                        }
+                        if (i == (int)Params.WP_SIM)
+                        {
+                            if (SimNo != null && SimNo.Length == 19)
+                            {
+                                ResultsCollection[i].Result = "Pass. SIM No=" + SimNo;
+                            }
+                            else
+                            {
+                                ResultsCollection[i].Result = "Fail.";
+                                ResultsCollection[i].IsSelected = false;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        ResultsCollection[i].IsSelected = false;
+                        ResultsCollection[i].Result = "Fail.";
+                    }
+                }
+                TestResult = ResultsCollection.All(x => x.IsSelected == true) ? "Pass" : "Fail";
+                if (ConsoleMonitorData.Contains(appSettings["RetryText"]))
+                {
+                    MessageBox.Show(" Please check the connections and retry","Flash Error",MessageBoxButton.OK);
+
+                }
+                if (IMEINo != null)
+                {
+                    File.WriteAllText("Logs/" + IMEINo + ".txt", ConsoleMonitorData);
+                }
+                else
+                {
+                    File.WriteAllText("Logs/" + DateTime.Now.ToString("yyyy-MM-dd HH-mm-ss") + ".txt", ConsoleMonitorData);
+                 
+                }
+                eventHandled.TrySetResult(true);
+            }
+            catch(Exception ex)
+            {
+                Debug.WriteLine(ex.ToString());
+            }
+        }
+
 
         public void RaisePropertyChange(string propertyname)
         {
@@ -403,10 +347,25 @@ namespace IntanglesTestUtility
             }
         }
 
-        private void ComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
+    }
 
+    public class ValueConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+        {
+            if (null != value)
+            {
+                if (value.ToString().Contains("Error:"))
+                    return true;
+            }
+            return false;
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+        {
+            return null;
         }
     }
+
 }
 

@@ -5,59 +5,121 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:IntanglesTestUtility"
         mc:Ignorable="d"
-        Title="Intangles Test Utility" Height="Auto" Width="Auto"  BorderThickness="1"
-        WindowStartupLocation="CenterScreen" WindowState="Maximized">
-    <Grid>
+        Title="FlashNTest Utility- Intangles Lab" Height="Auto" Width="Auto"  BorderThickness="1"
+       WindowStartupLocation="CenterScreen" WindowState="Normal" Icon="IntanglesIcon.ico">
+    <Window.Resources>
+        <local:ValueConverter x:Key="ValueConverter"></local:ValueConverter>
+    </Window.Resources>
+  
+    <Grid Background="#293846">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="1*" />
             <ColumnDefinition Width="1*" />
             <ColumnDefinition Width="1*" />
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
+            <RowDefinition Height="1*"/>
             <RowDefinition Height="6*" />
-            <RowDefinition Height="1*" />
-            <RowDefinition Height="4*" />
+            <RowDefinition Height="0" />
+            <RowDefinition Height="0" />
         </Grid.RowDefinitions>
-        <Grid Grid.Row="0">
+        <Grid Grid.Row="0" Grid.ColumnSpan="3"  Background="#293846">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="1*" />
+                <ColumnDefinition Width="7*" />
+            </Grid.ColumnDefinitions>
+            <Image Grid.Column="0" Source="IntanglesLogo.png"></Image>
+            <TextBlock HorizontalAlignment="Left" Grid.Column="1" Background="#293846" FontSize="30" Foreground="White" FontWeight="Medium">FlashNTest Utility- Intangles Lab</TextBlock>
+        </Grid>
+        <Grid Grid.Row="1" Background="White">
             <Grid.RowDefinitions>
                 <RowDefinition Height="1*" />
                 <RowDefinition Height="1*" />
-                <RowDefinition Height="4*" />
+                <RowDefinition Height="6*" />
             </Grid.RowDefinitions>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="1*" />
-                <ColumnDefinition Width="1*" />
             </Grid.ColumnDefinitions>
-            <Button Grid.Row="0" Content="Start&#x9;" Margin="10,10,10,10" HorizontalAlignment="Left" Height="29"  VerticalAlignment="Top" Width="108" Click="Button_Click_Start"/>
-            <Button Grid.Row="1" Content="Clear&#x9;" Margin="10,10,10,10" HorizontalAlignment="Left" Height="29"  VerticalAlignment="Top" Width="108" Click="Button_Click_Clear"/>
-            <Grid Grid.Row="2" Grid.ColumnSpan="2">
-                <DataGrid ItemsSource="{Binding ResultsCollection}"
+            <Button Grid.Row="0" Content="Start&#x9;" FontWeight="Medium" HorizontalContentAlignment="Center"  HorizontalAlignment="Center" Height="29"  VerticalAlignment="Center" Width="108" Click="Button_Click_StartAsync"/>
+            <Button Grid.Row="1" Content="Clear&#x9;" FontWeight="Medium" HorizontalContentAlignment="Center" HorizontalAlignment="Center" Height="29"  VerticalAlignment="Center" Width="108" Click="Button_Click_Clear"/>
+            <Grid Grid.Row="2" Background="#dddddd">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="1*" />
+                    <RowDefinition Height="8*" />
+                    <RowDefinition Height="1*" />
+                </Grid.RowDefinitions>
+                <TextBox Background="#dddddd" FontSize="15" >Results :</TextBox>
+                <DataGrid Grid.Row="1" ItemsSource="{Binding ResultsCollection}"
                   AutoGenerateColumns="False"
-                  CanUserAddRows="False">
-
+                  CanUserAddRows="False" CanUserSortColumns="False" >
+                    <DataGrid.CellStyle>
+                        <Style TargetType="{x:Type DataGridCell}">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding IsSelected}" Value="True">
+                                    <Setter Property="Foreground" Value="Green" />
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding IsSelected}" Value="False">
+                                    <Setter Property="Foreground" Value="Red" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </DataGrid.CellStyle>
+                    
                     <DataGrid.Columns>
 
                         <!--<DataGridCheckBoxColumn Header="Select" Binding="{Binding IsSelected}" />-->
 
-                        <DataGridTextColumn Header="Parameter" Binding="{Binding Parameter}"/>
+                        <DataGridTextColumn Header="Parameter" Binding="{Binding Parameter,Mode=OneWay}"/>
 
                         <DataGridTemplateColumn Header="Status">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
-                                    <CheckBox IsEnabled="False" IsChecked="{Binding IsSelected, UpdateSourceTrigger=PropertyChanged}" />
+                                    <CheckBox IsEnabled="False"  IsChecked="{Binding IsSelected, UpdateSourceTrigger=PropertyChanged}" />
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
 
-                        <DataGridTextColumn Width="*" Header="Result" Binding="{Binding Result}" />
+                        <DataGridTextColumn Width="*" Header="Result" Binding="{Binding Result,Mode=OneWay}" />
 
                     </DataGrid.Columns>
                 </DataGrid>
+                <StackPanel Grid.Row="2" Orientation="Horizontal">
+                    <TextBox VerticalAlignment="Center" Background="#dddddd" FontWeight="Bold" FontSize="16" BorderThickness="0">Final Status:</TextBox>
+                    <TextBox VerticalAlignment="Center" Background="#dddddd" FontWeight="Bold"  FontSize="16" Text="{Binding TestResult}" BorderThickness="0">
+                        <TextBox.Style>
+                            <Style TargetType="TextBox">
+                                <Style.Triggers>
+                                    <Trigger Property ="Text" Value="Pass">
+                                        <Setter Property= "Foreground" Value="Green"/>
+                                    </Trigger>
+                                    <Trigger Property ="Text" Value="Fail">
+                                        <Setter Property= "Foreground" Value="Red"/>
+                                    </Trigger>
+                                </Style.Triggers>
+                            </Style>
+                            </TextBox.Style>
+                    </TextBox>
+                </StackPanel>
+                
             </Grid>
         </Grid>
-        <StackPanel Background="#f2f3f5" Grid.Row="1" Grid.ColumnSpan="3" Orientation="Horizontal">
+        <Border Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="3" BorderThickness="1" BorderBrush="Black">
+            <Grid  Background="#dddddd">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="1*" />
+                    <RowDefinition Height="8*" />
+                </Grid.RowDefinitions>
+                <TextBox IsReadOnly="True" FontSize="15" VerticalAlignment="Bottom" HorizontalAlignment="Stretch" BorderThickness="0" Background="#dddddd">Console Monitor :</TextBox>
+               
+                <ScrollViewer Grid.Row="1" Background="White" BorderBrush="Black" BorderThickness="5" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Margin="10,10,10,10">
+                    <TextBlock  x:Name="TextBlock_ConsoleMonitor" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" TextWrapping="Wrap" Text="{Binding ConsoleMonitorData,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,20" ></TextBlock>
+                </ScrollViewer>
+
+            </Grid >
+        </Border>
+        <StackPanel Background="#f2f3f5" Grid.Row="2" Grid.ColumnSpan="3" Orientation="Horizontal">
             <TextBox  IsReadOnly="True" FontSize="15" Background="#f2f3f5" HorizontalAlignment="Stretch" VerticalAlignment="Center" >Serial Monitor</TextBox>
-            <ComboBox Name="cmbComPort"  Margin="50,10,10,10" HorizontalAlignment="Left" Height="29"  VerticalAlignment="Center" Width="108" SelectionChanged="ComboBox_SelectionChanged">
+            <ComboBox Name="cmbComPort"  Margin="50,10,10,10" HorizontalAlignment="Left" Height="29"  VerticalAlignment="Center" Width="108">
                 <DataTemplate>
                     <StackPanel Orientation="Horizontal">
                         <TextBlock Text="{Binding Name}" />
@@ -71,7 +133,7 @@
                     </StackPanel>
                 </DataTemplate>
             </ComboBox>
-            <ComboBox Name="cmbBaudRate"   Margin="10,10,10,10" HorizontalAlignment="Left" Height="29"  VerticalAlignment="Center" Width="108" >
+            <ComboBox Name="cmbBaudRate"   Margin="5,5,5,5" HorizontalAlignment="Left" Height="29"  VerticalAlignment="Center" Width="108" >
                 <DataTemplate>
                     <StackPanel Orientation="Horizontal">
                         <TextBlock Text="{Binding Name}" />
@@ -79,21 +141,6 @@
                 </DataTemplate>
             </ComboBox>
         </StackPanel>
-        <Border Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="3" BorderThickness="1" BorderBrush="Black">
-            <Grid >
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="1*" />
-                    <RowDefinition Height="8*" />
-                </Grid.RowDefinitions>
-                <StackPanel Orientation="Horizontal"  Background="#f2f3f5" >
-                    <TextBox IsReadOnly="True" FontSize="15" VerticalAlignment="Stretch" HorizontalAlignment="Stretch"  Background="#f2f3f5" BorderThickness="1">Console Monitor</TextBox>
-                </StackPanel>
-                <ScrollViewer Grid.Row="1" Background="FloralWhite" BorderBrush="Black" BorderThickness="5" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Margin="10,10,10,10">
-                    <TextBlock  x:Name="TextBlockX" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" TextWrapping="Wrap" Text="{Binding ConsoleMonitorData,Mode=OneWay}"  Margin="0,0,0,20" />
-                </ScrollViewer>
-
-            </Grid >
-        </Border>
         <Border Grid.Row="3" Grid.ColumnSpan="3" BorderThickness="1" BorderBrush="Black">
             <Grid >
                 <Grid.RowDefinitions>

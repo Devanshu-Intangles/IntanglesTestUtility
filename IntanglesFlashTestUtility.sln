@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.28307.1062
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IntanglesTestUtility", "IntanglesTestUtility\IntanglesTestUtility.csproj", "{F27D899C-953B-47AA-9B90-3302C828277B}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IntanglesFlashTestUtility", "IntanglesTestUtility\IntanglesFlashTestUtility.csproj", "{F27D899C-953B-47AA-9B90-3302C828277B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
