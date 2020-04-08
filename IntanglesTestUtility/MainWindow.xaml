@@ -3,13 +3,15 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:gif="http://wpfanimatedgif.codeplex.com"
         xmlns:local="clr-namespace:IntanglesTestUtility"
         mc:Ignorable="d"
         Title="FlashNTest Utility- Intangles Lab" Height="Auto" Width="Auto"  BorderThickness="1"
        WindowStartupLocation="CenterScreen" WindowState="Normal" Icon="IntanglesIcon.ico">
     <Window.Resources>
         <local:ValueConverter x:Key="ValueConverter"></local:ValueConverter>
-    </Window.Resources>
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+        </Window.Resources>
   
     <Grid Background="#293846">
         <Grid.ColumnDefinitions>
@@ -48,8 +50,9 @@
                     <RowDefinition Height="8*" />
                     <RowDefinition Height="1*" />
                 </Grid.RowDefinitions>
-                <TextBox Background="#dddddd" FontSize="15" >Results :</TextBox>
-                <DataGrid Grid.Row="1" ItemsSource="{Binding ResultsCollection}"
+                <TextBox Grid.Row="0" Grid.RowSpan="2" Background="#dddddd" FontSize="15" >Results :</TextBox>
+                <Image Grid.Row="1" Name="imgCircle" Width="60" Height="60" Visibility="{Binding IsProcessRunning,Converter={StaticResource BooleanToVisibilityConverter}}" gif:ImageBehavior.AnimatedSource="/LoadingImageTS.gif" />
+                <DataGrid x:Name="ResultGrid" Grid.Row="1" ItemsSource="{Binding ResultsCollection}"
                   AutoGenerateColumns="False"
                   CanUserAddRows="False" CanUserSortColumns="False" >
                     <DataGrid.CellStyle>
@@ -79,7 +82,7 @@
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
 
-                        <DataGridTextColumn Width="*" Header="Result" Binding="{Binding Result,Mode=OneWay}" />
+                        <DataGridTextColumn Width="*" Header="Result" Binding="{Binding Result,Mode=TwoWay}" />
 
                     </DataGrid.Columns>
                 </DataGrid>
@@ -112,7 +115,7 @@
                 <TextBox IsReadOnly="True" FontSize="15" VerticalAlignment="Bottom" HorizontalAlignment="Stretch" BorderThickness="0" Background="#dddddd">Console Monitor :</TextBox>
                
                 <ScrollViewer Grid.Row="1" Background="White" BorderBrush="Black" BorderThickness="5" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Margin="10,10,10,10">
-                    <TextBlock  x:Name="TextBlock_ConsoleMonitor" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" TextWrapping="Wrap" Text="{Binding ConsoleMonitorData,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,20" ></TextBlock>
+                    <TextBlock  x:Name="TextBlock_ConsoleMonitor" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" TextWrapping="Wrap" Margin="0,0,0,20" ></TextBlock>
                 </ScrollViewer>
 
             </Grid >

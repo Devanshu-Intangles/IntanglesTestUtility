@@ -2,13 +2,10 @@
 using System.Linq;
 using System.Text;
 using System.Windows;
-using System.Windows.Controls;
 using System.Diagnostics;
 using System.ComponentModel;
-using SerialPortLib;
 using System.Collections.ObjectModel;
 using IntanglesTestUtility.Model;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Configuration;
 using System.IO;
@@ -24,6 +21,7 @@ namespace IntanglesTestUtility
     /// </summary>
     public partial class MainWindow : Window, INotifyPropertyChanged
     {
+        
         private TaskCompletionSource<bool> eventHandled;
         private Process FlashTestProcess;
         string IMEINo;
@@ -81,6 +79,35 @@ namespace IntanglesTestUtility
                 RaisePropertyChange("TestResult");
             }
         }
+        private bool isProcessRunning;
+
+        public bool IsProcessRunning
+        {
+            get
+            {
+                return isProcessRunning;
+            }
+            set
+            {
+                isProcessRunning = value;
+                if (isProcessRunning == true)
+                {
+                    this.Dispatcher.Invoke(() =>
+                    {
+                        ResultGrid.Opacity = 0.65;
+                    });
+                }
+                else
+                {
+                    this.Dispatcher.Invoke(() =>
+                    {
+                        ResultGrid.Opacity = 1;
+                    });
+                }
+                RaisePropertyChange("IsProcessRunning");
+            }
+        }
+
 
         public StringBuilder SerialOutput
         {
@@ -145,7 +172,7 @@ namespace IntanglesTestUtility
             // Listen to Serial Port events
             ResultsCollection.Add(new TestResultsModel { IsSelected=false,Parameter="STM-IMU",Result= string.Empty });
             ResultsCollection.Add(new TestResultsModel { IsSelected = false, Parameter = "STM-RTC", Result = string.Empty });
-            ResultsCollection.Add(new TestResultsModel { IsSelected = false, Parameter = "STM-Internal Battery", Result = string.Empty });
+            // ResultsCollection.Add(new TestResultsModel { IsSelected = false, Parameter = "STM-Internal Battery", Result = string.Empty });
             ResultsCollection.Add(new TestResultsModel { IsSelected = false, Parameter = "STM-External Battery", Result = string.Empty });
             ResultsCollection.Add(new TestResultsModel { IsSelected = false, Parameter = "STM-CAN1", Result = string.Empty });
             ResultsCollection.Add(new TestResultsModel { IsSelected = false, Parameter = "STM-CAN2", Result = string.Empty });
@@ -159,6 +186,7 @@ namespace IntanglesTestUtility
 
         private async void Button_Click_StartAsync(object sender, RoutedEventArgs e)
         {
+            IsProcessRunning = true;
             ClearAllData();
             var appSettings = ConfigurationManager.AppSettings;
             if (File.Exists(appSettings["TempFileName"]))
@@ -182,7 +210,7 @@ namespace IntanglesTestUtility
                     FlashTestProcess.Start();
                     FlashTestProcess.BeginOutputReadLine();
                     ProcessId=FlashTestProcess.Id;
-                    await Task.WhenAny(eventHandled.Task, Task.Delay(300000));
+                    await Task.WhenAny(eventHandled.Task, Task.Delay(1000000));
                 }
             }
             catch (Exception ex)
@@ -195,16 +223,23 @@ namespace IntanglesTestUtility
         private void Button_Click_Clear(object sender, RoutedEventArgs e)
         {
             ClearAllData();
+            IsProcessRunning = false;
         }
 
         void ClearAllData()
         {
             try
             {
+                Process[] process = Process.GetProcesses();
+                process.Where(x => x.Id == ProcessId).FirstOrDefault()?.Kill();
                 ConsoleOutput.Clear();
                 SerialOutput.Clear();
                 ConsoleMonitorData = string.Empty;
-                SerialMonitorData = string.Empty;
+                this.Dispatcher.Invoke(() =>
+                {
+                    TextBlock_ConsoleMonitor.Text = string.Empty;
+                });
+                    SerialMonitorData = string.Empty;
                 foreach (var model in ResultsCollection)
                 {
                     model.IsSelected = false;
@@ -252,7 +287,7 @@ namespace IntanglesTestUtility
                     // Add the text to the collected output.
                     ConsoleOutput.Append(Environment.NewLine +
                     $"{outLine.Data}");
-                    // ConsoleMonitorData = ConsoleOutput.ToString();
+                    ConsoleMonitorData = ConsoleOutput.ToString();
                 }
             }
             catch(Exception ex)
@@ -263,6 +298,7 @@ namespace IntanglesTestUtility
 
         private void FlashTestProcess_Exited(object sender, System.EventArgs e)
         {
+            IsProcessRunning = false;
             try
             {
                 Process[] process= Process.GetProcesses();
@@ -277,7 +313,7 @@ namespace IntanglesTestUtility
                     res = data[2].ToArray().ToList();
                     //res = data[2].Split(',').ToList();
                 }
-                for (int i = 0; i < 11; i++)
+                for (int i = 0; i < Convert.ToInt32(appSettings["TotalNoOfParams"]); i++)
                 {
                     if (res != null && res.Count > 0 && res?[i] == '1')
                     {
