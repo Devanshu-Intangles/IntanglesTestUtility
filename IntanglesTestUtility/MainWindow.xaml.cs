@@ -154,7 +154,7 @@ namespace IntanglesTestUtility
         {
             STM_IMU,
             STM_RTC,
-            STM_Internal_Battery,
+            // STM_Internal_Battery,
             STM_External_Battery,
             STM_CAN1,
             STM_CAN2,

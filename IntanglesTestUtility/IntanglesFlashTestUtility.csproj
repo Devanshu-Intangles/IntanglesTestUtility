@@ -168,12 +168,6 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="LoadingImage.gif" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="LoadingImageT.gif" />
-  </ItemGroup>
-  <ItemGroup>
     <Resource Include="LoadingImageTS.gif" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
